@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://2jg1h83xyb88"]
+
+[ext_resource type="Texture2D" uid="uid://3vbi3itso8tv" path="res://sprites/Swan_01.png" id="1_chpe5"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8rcgw"]
+atlas = ExtResource("1_chpe5")
+region = Rect2(0, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_pgk3x"]
+atlas = ExtResource("1_chpe5")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_ahubb"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8rcgw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_pgk3x")
+}],
+"loop": true,
+"name": &"default",
+"speed": 1.0
+}]
+
+[node name="swan" type="Node2D" unique_id=2090560983]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1534401967]
+sprite_frames = SubResource("SpriteFrames_ahubb")
+frame_progress = 0.8879204
