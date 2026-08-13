@@ -11,13 +11,17 @@ config_version=5
 [application]
 
 config/name="Dierzoeker"
-run/main_scene="uid://bq0fi1xc3y0lt"
+run/main_scene="uid://dn2ebvj0ahjs2"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
 Global="*uid://yry2a6nffyx7"
+
+[display]
+
+window/stretch/mode="viewport"
 
 [physics]
 
