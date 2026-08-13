@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://duace61kyw3h2"]
 
+[ext_resource type="Script" uid="uid://4g7peg38bxvv" path="res://Scripts/cow.gd" id="1_wf0t2"]
 [ext_resource type="Texture2D" uid="uid://d3skdhtry0j5y" path="res://sprites/Goose_02.png" id="1_wo8sg"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_wf0t2"]
@@ -95,6 +96,7 @@ animations = [{
 }]
 
 [node name="goose" type="Node2D" unique_id=1204376466]
+script = ExtResource("1_wf0t2")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=824033167]
 sprite_frames = SubResource("SpriteFrames_wj6hx")

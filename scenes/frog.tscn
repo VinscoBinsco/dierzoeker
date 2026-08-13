@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://irfclpxgogvy"]
 
 [ext_resource type="Texture2D" uid="uid://djtjrp3cn34ee" path="res://sprites/Frog_01.png" id="1_mqod6"]
+[ext_resource type="Script" uid="uid://4g7peg38bxvv" path="res://Scripts/cow.gd" id="1_qyo2l"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_qyo2l"]
 atlas = ExtResource("1_mqod6")
@@ -67,6 +68,7 @@ animations = [{
 }]
 
 [node name="frog" type="Node2D" unique_id=1924006247]
+script = ExtResource("1_qyo2l")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=633802490]
 sprite_frames = SubResource("SpriteFrames_4au2m")

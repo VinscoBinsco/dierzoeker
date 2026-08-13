@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dmvi88b4xt1w6"]
 
 [ext_resource type="Texture2D" uid="uid://b5ry72x6hfl5o" path="res://sprites/Duck_01.png" id="1_ql0qm"]
+[ext_resource type="Script" uid="uid://4g7peg38bxvv" path="res://Scripts/cow.gd" id="1_tils5"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_tils5"]
 atlas = ExtResource("1_ql0qm")
@@ -25,6 +26,7 @@ animations = [{
 }]
 
 [node name="duck" type="Node2D" unique_id=96928524]
+script = ExtResource("1_tils5")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1012951629]
 sprite_frames = SubResource("SpriteFrames_kls7j")

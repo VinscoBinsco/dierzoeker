@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://nus2ckkhjqic"]
 
+[ext_resource type="Script" uid="uid://4g7peg38bxvv" path="res://Scripts/cow.gd" id="1_4a8uq"]
 [ext_resource type="Texture2D" uid="uid://d38cdpe0uxey0" path="res://sprites/Pig_01.png" id="1_sq5kf"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_4a8uq"]
@@ -74,6 +75,7 @@ animations = [{
 }]
 
 [node name="pig" type="Node2D" unique_id=330555973]
+script = ExtResource("1_4a8uq")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1988457908]
 sprite_frames = SubResource("SpriteFrames_udrue")
