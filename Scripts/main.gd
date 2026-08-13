@@ -22,8 +22,6 @@ const HARD_MAX := 5
 
 @export var cell_size: float = 90.0
 @export var num_animals: int = 6
-@export var top_margin: float = 100.0
-@export var bottom_margin: float = 160.0
 @export var side_margin: float = 40.0
 
 @onready var axis_grid: Node2D = $AxisGrid
@@ -56,71 +54,184 @@ var sign_x: bool = false
 var sign_y: bool = false
 var active_field: String = "x"
 
-const ACTIVE_COLOR := Color(0.3, 0.75, 0.3)
-const INACTIVE_COLOR := Color(0.6, 0.6, 0.6)
+const ACTIVE_COLOR := Color(0.35, 0.95, 0.4)
+const INACTIVE_COLOR := Color(0.45, 0.45, 0.45)
+const ACCENT_BLUE := Color("2e86de")
+const ACCENT_ORANGE := Color("ff9f43")
+const DARK_BG := Color("2d3436")
+const LIGHT_TEXT := Color("f5f6fa")
 
 
 func _ready() -> void:
 	randomize()
 	_setup_range()
-	_compute_origin()
 	_layout_ui()
+	_compute_origin()
 	axis_grid.configure(min_val, max_val, cell_size, origin)
 	_spawn_animals()
 	_connect_buttons()
+	_style_ui()
 	pick_new_target()
-
-
-func _layout_ui() -> void:
-	var viewport_size := get_viewport_rect().size
-
-	# === TOPBAR POSITIE & ACHTERGROND (ORANJE) ===
-	top_bar_container.alignment = BoxContainer.ALIGNMENT_CENTER
-	top_bar_container.position = Vector2(20, 15)
-	top_bar_container.size = Vector2(viewport_size.x - 40, 55)
-	top_bar_container.add_theme_constant_override("separation", 20)
 	
-	# Maak oranje achtergrondvlak aan
-	var top_bg: ColorRect = top_bar_container.get_node_or_null("TopBG") as ColorRect
+	# === RESPONSIVE: herbereken alles bij venster-resize ===
+	get_tree().root.size_changed.connect(_on_window_resized)
+
+
+func _on_window_resized() -> void:
+	_layout_ui()
+	_compute_origin()
+	axis_grid.configure(min_val, max_val, cell_size, origin)
+	
+	# Alle dieren opnieuw positioneren op het grid
+	for animal in spawned_animals:
+		var pos: Vector2i = animal["grid_pos"]
+		var instance: Node2D = animal["instance"]
+		if is_instance_valid(instance):
+			instance.position = grid_to_pixel(pos) + Vector2(0, -20)
+
+
+# ═══════════════════════════════════════════════════════════════
+#  STYLING
+# ═══════════════════════════════════════════════════════════════
+
+func _style_ui() -> void:
+	# ── TopBar achtergrond ──
+	var top_bg: Panel = top_bar_container.get_node_or_null("TopBG") as Panel
 	if not top_bg:
-		top_bg = ColorRect.new()
+		top_bg = Panel.new()
 		top_bg.name = "TopBG"
 		top_bar_container.add_child(top_bg)
 		top_bar_container.move_child(top_bg, 0)
 	top_bg.show_behind_parent = true
-	top_bg.color = Color("ff9f43") # Warm oranje
-	top_bg.size = top_bar_container.size
-
-	target_sprite.custom_minimum_size = Vector2(45, 45)
-	target_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	target_sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	
-	for child in top_bar_container.get_children():
-		if child is Label:
-			child.add_theme_font_size_override("font_size", 22)
-
-	# === BOTTOMBAR POSITIE & ACHTERGROND (BLAUW) ===
-	var bar_height := 65.0
-	bottom_bar.position = Vector2(20, viewport_size.y - bar_height - 15)
-	bottom_bar.size = Vector2(viewport_size.x - 40, bar_height)
-	bottom_bar.add_theme_constant_override("separation", 8)
+	var top_style := StyleBoxFlat.new()
+	top_style.bg_color = ACCENT_ORANGE
+	top_style.corner_radius_top_left = 16
+	top_style.corner_radius_top_right = 16
+	top_style.corner_radius_bottom_left = 16
+	top_style.corner_radius_bottom_right = 16
+	top_style.shadow_color = Color(0, 0, 0, 0.3)
+	top_style.shadow_size = 6
+	top_bg.add_theme_stylebox_override("panel", top_style)
 	
-	# Maak blauw achtergrondvlak aan
-	var bottom_bg: ColorRect = bottom_bar.get_node_or_null("BottomBG") as ColorRect
+	# ── BottomBar achtergrond ──
+	var bottom_bg: Panel = bottom_bar.get_node_or_null("BottomBG") as Panel
 	if not bottom_bg:
-		bottom_bg = ColorRect.new()
+		bottom_bg = Panel.new()
 		bottom_bg.name = "BottomBG"
 		bottom_bar.add_child(bottom_bg)
 		bottom_bar.move_child(bottom_bg, 0)
 	bottom_bg.show_behind_parent = true
-	bottom_bg.color = Color("2e86de") # Speels blauw
-	bottom_bg.size = bottom_bar.size
+	
+	var bottom_style := StyleBoxFlat.new()
+	bottom_style.bg_color = ACCENT_BLUE
+	bottom_style.corner_radius_top_left = 16
+	bottom_style.corner_radius_top_right = 16
+	bottom_style.corner_radius_bottom_left = 16
+	bottom_style.corner_radius_bottom_right = 16
+	bottom_style.shadow_color = Color(0, 0, 0, 0.3)
+	bottom_style.shadow_size = 6
+	bottom_bg.add_theme_stylebox_override("panel", bottom_style)
+	
+	# ── Knoppen styling ──
+	for child in bottom_bar.get_children():
+		if child is Button:
+			_style_button(child)
+	
+	# ── Invulvakjes X / Y ──
+	_style_value_label(x_value_label)
+	_style_value_label(y_value_label)
+	
+	# ── Overige labels in topbar ──
+	for child in top_bar_container.get_children():
+		if child is Label and child != x_value_label and child != y_value_label:
+			child.add_theme_font_size_override("font_size", 26)
+			child.add_theme_color_override("font_color", LIGHT_TEXT)
+	
+	# ── Doel-sprite 1.5× groter ──
+	target_sprite.custom_minimum_size = Vector2(68, 68)
+	target_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	target_sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+
+
+func _style_value_label(lbl: Label) -> void:
+	lbl.add_theme_font_size_override("font_size", 30)
+	lbl.add_theme_color_override("font_color", LIGHT_TEXT)
+	lbl.custom_minimum_size = Vector2(44, 44)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+
+
+func _style_button(btn: Button) -> void:
+	var base_color := DARK_BG
+	
+	# Accentkleuren per speciale knop
+	if btn == enter_button:
+		base_color = Color("27ae60")
+	elif btn == backspace_button:
+		base_color = Color("c0392b")
+	elif btn == sign_button:
+		base_color = Color("8e44ad")
+	
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = base_color
+	normal.corner_radius_top_left = 10
+	normal.corner_radius_top_right = 10
+	normal.corner_radius_bottom_left = 10
+	normal.corner_radius_bottom_right = 10
+	btn.add_theme_stylebox_override("normal", normal)
+	
+	var hover := StyleBoxFlat.new()
+	hover.bg_color = base_color.lightened(0.12)
+	hover.corner_radius_top_left = 10
+	hover.corner_radius_top_right = 10
+	hover.corner_radius_bottom_left = 10
+	hover.corner_radius_bottom_right = 10
+	btn.add_theme_stylebox_override("hover", hover)
+	
+	var pressed := StyleBoxFlat.new()
+	pressed.bg_color = base_color.darkened(0.2)
+	pressed.corner_radius_top_left = 10
+	pressed.corner_radius_top_right = 10
+	pressed.corner_radius_bottom_left = 10
+	pressed.corner_radius_bottom_right = 10
+	btn.add_theme_stylebox_override("pressed", pressed)
+	
+	btn.add_theme_font_size_override("font_size", 24)
+	btn.add_theme_color_override("font_color", LIGHT_TEXT)
+
+
+# ═══════════════════════════════════════════════════════════════
+#  LAYOUT & GRID
+# ═══════════════════════════════════════════════════════════════
+
+func _layout_ui() -> void:
+	var viewport_size := get_viewport_rect().size
+
+	# TopBar
+	top_bar_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	top_bar_container.position = Vector2(20, 15)
+	top_bar_container.size = Vector2(viewport_size.x - 40, 75)
+	top_bar_container.add_theme_constant_override("separation", 28)
+	
+	var top_bg := top_bar_container.get_node_or_null("TopBG") as Panel
+	if top_bg:
+		top_bg.size = top_bar_container.size
+
+	# BottomBar
+	var bar_height := 80.0
+	bottom_bar.position = Vector2(20, viewport_size.y - bar_height - 15)
+	bottom_bar.size = Vector2(viewport_size.x - 40, bar_height)
+	bottom_bar.add_theme_constant_override("separation", 10)
+	
+	var bottom_bg := bottom_bar.get_node_or_null("BottomBG") as Panel
+	if bottom_bg:
+		bottom_bg.size = bottom_bar.size
 
 	for child in bottom_bar.get_children():
 		if child is Button:
 			child.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			child.custom_minimum_size.y = bar_height - 10
-			child.add_theme_font_size_override("font_size", 20)
+			child.custom_minimum_size.y = bar_height - 16
 
 
 func _setup_range() -> void:
@@ -146,15 +257,13 @@ func _compute_origin() -> void:
 	var grid_width := span * cell_size
 	var grid_height := span * cell_size
 	
-	# Verhoogde top_margin zodat het raster onder de TopBar begint
-	var custom_top_margin := 110.0
-	var custom_bottom_margin := 100.0
-	
+	var effective_top := top_bar_container.position.y + top_bar_container.size.y + 20.0
+	var effective_bottom := bottom_bar.position.y - 20.0
+	var usable_height := effective_bottom - effective_top
 	var usable_width := viewport_size.x - side_margin * 2.0
-	var usable_height := viewport_size.y - custom_top_margin - custom_bottom_margin
 
 	var start_x := side_margin + (usable_width - grid_width) / 2.0
-	var start_y := custom_top_margin + (usable_height + grid_height) / 2.0
+	var start_y := effective_top + (usable_height + grid_height) / 2.0
 
 	origin = Vector2(start_x - min_val * cell_size, start_y + min_val * cell_size)
 
@@ -162,6 +271,10 @@ func _compute_origin() -> void:
 func grid_to_pixel(v: Vector2i) -> Vector2:
 	return origin + Vector2(v.x * cell_size, -v.y * cell_size)
 
+
+# ═══════════════════════════════════════════════════════════════
+#  GAMEPLAY
+# ═══════════════════════════════════════════════════════════════
 
 func _spawn_animals() -> void:
 	for child in animals_root.get_children():
@@ -189,10 +302,14 @@ func _spawn_animals() -> void:
 
 		var animal_scene: PackedScene = available_scenes[i]
 		var animal_instance := animal_scene.instantiate() as Node2D
-		animal_instance.position = grid_to_pixel(pos)
+		animal_instance.position = grid_to_pixel(pos) + Vector2(0, -20)
 		animals_root.add_child(animal_instance)
 
-		spawned_animals.append({"scene": animal_scene, "instance": animal_instance, "grid_pos": pos})
+		spawned_animals.append({
+			"scene": animal_scene, 
+			"instance": animal_instance, 
+			"grid_pos": pos
+		})
 
 	unasked_animals = spawned_animals.duplicate()
 
@@ -249,7 +366,7 @@ func _game_over() -> void:
 	x_string = ""
 	y_string = ""
 	_update_display()
-	_show_feedback("Gefeliciteerd! Je hebt alle dieren gevonden!", Color(0.2, 0.8, 0.2))
+	_show_feedback("Gefeliciteerd! Je hebt alle dieren gevonden!", Color(0.2, 0.9, 0.2))
 	enter_button.disabled = true
 
 
@@ -293,13 +410,13 @@ func _on_enter_pressed() -> void:
 	var val_y := int(y_string) * (-1 if sign_y else 1)
 
 	if Vector2i(val_x, val_y) == target_animal["grid_pos"]:
-		_show_feedback("Goed zo!", Color(0.2, 0.7, 0.2))
+		_show_feedback("Goed zo!", Color(0.2, 0.9, 0.2))
 		enter_button.disabled = true
 		await get_tree().create_timer(1.0).timeout
 		enter_button.disabled = false
 		pick_new_target()
 	else:
-		_show_feedback("Nog niet helemaal goed, probeer opnieuw!", Color(0.8, 0.2, 0.2))
+		_show_feedback("Nog niet helemaal goed, probeer opnieuw!", Color(0.9, 0.2, 0.2))
 		x_string = ""
 		y_string = ""
 		sign_x = false

@@ -25,23 +25,27 @@ func grid_to_pixel(v: Vector2i) -> Vector2:
 func _draw() -> void:
 	var font := ThemeDB.fallback_font
 
-	# verticale lijnen (constante x)
+	# Verticale lijnen + X-as cijfers (onderaan)
 	for x in range(min_val, max_val + 1):
 		var top := grid_to_pixel(Vector2i(x, max_val))
 		var bottom := grid_to_pixel(Vector2i(x, min_val))
 		draw_line(top, bottom, grid_color, 1.0)
-		var label_pos := grid_to_pixel(Vector2i(x, min_val)) + Vector2(-6, 20)
+		
+		# Cijfer verder naar beneden (was +20, nu +36)
+		var label_pos := grid_to_pixel(Vector2i(x, min_val)) + Vector2(-6, 36)
 		draw_string(font, label_pos, str(x), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 
-	# horizontale lijnen (constante y)
+	# Horizontale lijnen + Y-as cijfers (links)
 	for y in range(min_val, max_val + 1):
 		var left := grid_to_pixel(Vector2i(min_val, y))
 		var right := grid_to_pixel(Vector2i(max_val, y))
 		draw_line(left, right, grid_color, 1.0)
-		var label_pos := grid_to_pixel(Vector2i(min_val, y)) + Vector2(-24, 4)
+		
+		# Cijfer verder naar links (was -24, nu -40)
+		var label_pos := grid_to_pixel(Vector2i(min_val, y)) + Vector2(-40, 4)
 		draw_string(font, label_pos, str(y), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size)
 
-	# dikke assen, alleen tekenen als 0 binnen het bereik valt
+	# Dikke assen...
 	if min_val <= 0 and 0 <= max_val:
 		draw_line(
 			grid_to_pixel(Vector2i(min_val, 0)),
