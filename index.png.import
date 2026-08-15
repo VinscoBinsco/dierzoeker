@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3vbi3itso8tv"
-path="res://.godot/imported/Swan_01.png-45a619d41b2153a38dcd52de1b260546.ctex"
+uid="uid://bnin5daxnjt83"
+path="res://.godot/imported/index.png-5122033cac747157decad52589e2295c.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprites/Swan_01.png"
-dest_files=["res://.godot/imported/Swan_01.png-45a619d41b2153a38dcd52de1b260546.ctex"]
+source_file="res://index.png"
+dest_files=["res://.godot/imported/index.png-5122033cac747157decad52589e2295c.ctex"]
 
 [params]
 

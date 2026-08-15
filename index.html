@@ -99,13 +99,13 @@ body {
     try {
       const parentHost = window.top.location.hostname;
       if (!parentHost.endsWith(allowedDomain)) {
-        document.body.innerHTML = "<h1>Toegang geweigerd: Deze game mag alleen op jouwwebsite.nl gespeeld worden.</h1>";
+        document.body.innerHTML = "<h1>Toegang geweigerd: Deze game mag alleen op schoolheld.nl gespeeld worden.</h1>";
       }
     } catch (e) {
       document.body.innerHTML = "<h1>Toegang geweigerd: Externe embedding niet toegestaan.</h1>";
     }
   } else {
-    window.location.href = "https://jouwwebsite.nl";
+    window.location.href = "https://schoolheld.nl";
   }
 </script>
 	</head>
@@ -126,7 +126,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":1270860,"index.wasm":35739700},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":1477980,"index.wasm":35739700},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 

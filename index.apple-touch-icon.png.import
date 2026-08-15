@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djtjrp3cn34ee"
-path="res://.godot/imported/Frog_01.png-0db7d159fbaf45444ae1089884c9d165.ctex"
+uid="uid://dmjdppn3ku2hn"
+path="res://.godot/imported/index.apple-touch-icon.png-8085a11cc297d91deb55511843765958.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprites/Frog_01.png"
-dest_files=["res://.godot/imported/Frog_01.png-0db7d159fbaf45444ae1089884c9d165.ctex"]
+source_file="res://index.apple-touch-icon.png"
+dest_files=["res://.godot/imported/index.apple-touch-icon.png-8085a11cc297d91deb55511843765958.ctex"]
 
 [params]
 
