@@ -9,6 +9,8 @@ const MAIN = preload("uid://bq0fi1xc3y0lt")
 @onready var title_label: Label = $CenterContainer/VBoxContainer/TitleLabel
 @onready var subtitle_label: Label = $CenterContainer/VBoxContainer/SubtitleLabel
 
+var fullscreen_button: Button
+
 const ACCENT_ORANGE := Color("ff9f43")
 const ACCENT_BLUE := Color("2e86de")
 const DARK_BG := Color("2d3436")
@@ -32,6 +34,7 @@ func _ready() -> void:
 		print("HardButton gevonden: ", hard_button.name)
 	
 	_style_ui()
+	_create_fullscreen_button()
 	_connect_buttons()
 
 
@@ -96,6 +99,59 @@ func _style_difficulty_button(btn: Button, accent_color: Color, title: String, s
 	
 	# Text opbouwen met newline
 	btn.text = title + "\n" + subtitle
+
+
+func _create_fullscreen_button() -> void:
+	fullscreen_button = Button.new()
+	fullscreen_button.name = "FullscreenButton"
+	fullscreen_button.text = "⛶"
+	fullscreen_button.tooltip_text = "Volledig scherm"
+	fullscreen_button.custom_minimum_size = Vector2(56, 56)
+	fullscreen_button.focus_mode = Control.FOCUS_NONE
+	fullscreen_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+
+	# Rechtsboven vastzetten, los van de resolutie
+	fullscreen_button.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	fullscreen_button.position = Vector2(-56 - 20, 20)
+
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = DARK_BG
+	normal.corner_radius_top_left = 12
+	normal.corner_radius_top_right = 12
+	normal.corner_radius_bottom_left = 12
+	normal.corner_radius_bottom_right = 12
+	normal.border_width_left = 2
+	normal.border_width_top = 2
+	normal.border_width_right = 2
+	normal.border_width_bottom = 2
+	normal.border_color = LIGHT_TEXT
+	fullscreen_button.add_theme_stylebox_override("normal", normal)
+
+	var hover := StyleBoxFlat.new()
+	hover.bg_color = DARK_BG.lightened(0.2)
+	hover.corner_radius_top_left = 12
+	hover.corner_radius_top_right = 12
+	hover.corner_radius_bottom_left = 12
+	hover.corner_radius_bottom_right = 12
+	hover.border_width_left = 2
+	hover.border_width_top = 2
+	hover.border_width_right = 2
+	hover.border_width_bottom = 2
+	hover.border_color = ACCENT_ORANGE
+	fullscreen_button.add_theme_stylebox_override("hover", hover)
+
+	fullscreen_button.add_theme_font_size_override("font_size", 28)
+	fullscreen_button.add_theme_color_override("font_color", LIGHT_TEXT)
+
+	add_child(fullscreen_button)
+	fullscreen_button.pressed.connect(_on_fullscreen_pressed)
+
+
+func _on_fullscreen_pressed() -> void:
+	if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 
 
 func _connect_buttons() -> void:

@@ -11,6 +11,11 @@ const HORSE = preload("uid://b0kdmt3bk35pi")
 const PIG = preload("uid://nus2ckkhjqic")
 const SHEEP = preload("uid://cvg5wnl2g7mc5")
 const SWAN = preload("uid://2jg1h83xyb88")
+const START_SCREEN = preload("uid://dn2ebvj0ahjs2")  
+
+# Sounds
+const CORRECT_SOUND = preload("res://chrisiex1-correct-156911.mp3")
+const VICTORY_SOUND = preload("res://emand_edroff-victory-bell-success-fanfare-576275.mp3")
 
 const ANIMAL_TEXTURES: Array[PackedScene] = [
 	BEE, CHICKEN, COW, DUCK, FROG, GOOSE, HORSE, PIG, SHEEP, SWAN]
@@ -39,6 +44,7 @@ const HARD_MAX := 5
 @onready var sign_button: Button = $UI/BottomBar/SignButton
 @onready var backspace_button: Button = $UI/BottomBar/BackspaceButton
 @onready var enter_button: Button = $UI/BottomBar/EnterButton
+@onready var audio_stream_player_2d: AudioStreamPlayer2D = $AudioStreamPlayer2D
 
 var min_val: int = EASY_MIN
 var max_val: int = EASY_MAX
@@ -55,16 +61,24 @@ var sign_y: bool = false
 var active_field: String = "x"
 
 const ACTIVE_COLOR := Color(0.35, 0.95, 0.4)
-const INACTIVE_COLOR := Color(0.45, 0.45, 0.45)
+const INACTIVE_COLOR := Color(0.541, 0.906, 0.216, 1.0)
 const ACCENT_BLUE := Color("2e86de")
 const ACCENT_ORANGE := Color("ff9f43")
 const DARK_BG := Color("2d3436")
 const LIGHT_TEXT := Color("f5f6fa")
 
+# Nieuwe nodes (worden aangemaakt in _style_ui)
+var back_button: Button
+var fullscreen_button: Button
+var feedback_bg: Panel
+var victory_overlay: Panel
+var victory_label: Label
+
 
 func _ready() -> void:
 	randomize()
 	_setup_range()
+	_create_victory_overlay()
 	_layout_ui()
 	_compute_origin()
 	axis_grid.configure(min_val, max_val, cell_size, origin)
@@ -133,6 +147,15 @@ func _style_ui() -> void:
 	bottom_style.shadow_offset = Vector2(0, -3)
 	bottom_bg.add_theme_stylebox_override("panel", bottom_style)
 	
+	# ── Terug-knop (links boven de TopBar) ──
+	_create_back_button(top_bar_parent)
+	
+	# ── Volledig-scherm-knop (naast de terug-knop) ──
+	_create_fullscreen_button(top_bar_parent)
+	
+	# ── Feedback achtergrond (mooi paneel achter feedback tekst) ──
+	_create_feedback_background(top_bar_parent)
+	
 	# ── Knoppen styling ──
 	for child in bottom_bar.get_children():
 		if child is Button:
@@ -161,11 +184,163 @@ func _style_ui() -> void:
 	# ── Feedback label ──
 	feedback_label.add_theme_font_size_override("font_size", 22)
 	feedback_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	feedback_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	
 	# ── Doel-sprite 1.5× groter ──
 	target_sprite.custom_minimum_size = Vector2(68, 68)
 	target_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	target_sprite.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+
+
+func _create_back_button(parent: Node) -> void:
+	back_button = Button.new()
+	back_button.name = "BackButton"
+	back_button.text = "Menu"
+	back_button.custom_minimum_size = Vector2(90, 40)
+	back_button.focus_mode = Control.FOCUS_NONE
+	back_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	
+	var style := StyleBoxFlat.new()
+	style.bg_color = DARK_BG
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_left = 10
+	style.corner_radius_bottom_right = 10
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.border_color = LIGHT_TEXT
+	back_button.add_theme_stylebox_override("normal", style)
+	
+	var hover := StyleBoxFlat.new()
+	hover.bg_color = DARK_BG.lightened(0.2)
+	hover.corner_radius_top_left = 10
+	hover.corner_radius_top_right = 10
+	hover.corner_radius_bottom_left = 10
+	hover.corner_radius_bottom_right = 10
+	hover.border_width_left = 2
+	hover.border_width_top = 2
+	hover.border_width_right = 2
+	hover.border_width_bottom = 2
+	hover.border_color = ACCENT_ORANGE
+	back_button.add_theme_stylebox_override("hover", hover)
+	
+	back_button.add_theme_font_size_override("font_size", 16)
+	back_button.add_theme_color_override("font_color", LIGHT_TEXT)
+	
+	parent.add_child(back_button)
+	back_button.position = Vector2(15, 15)
+	back_button.pressed.connect(_on_back_pressed)
+
+
+func _create_fullscreen_button(parent: Node) -> void:
+	fullscreen_button = Button.new()
+	fullscreen_button.name = "FullscreenButton"
+	fullscreen_button.text = "⛶"
+	fullscreen_button.tooltip_text = "Volledig scherm"
+	fullscreen_button.custom_minimum_size = Vector2(50, 40)
+	fullscreen_button.focus_mode = Control.FOCUS_NONE
+	fullscreen_button.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = DARK_BG
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_left = 10
+	style.corner_radius_bottom_right = 10
+	style.border_width_left = 2
+	style.border_width_top = 2
+	style.border_width_right = 2
+	style.border_width_bottom = 2
+	style.border_color = LIGHT_TEXT
+	fullscreen_button.add_theme_stylebox_override("normal", style)
+
+	var hover := StyleBoxFlat.new()
+	hover.bg_color = DARK_BG.lightened(0.2)
+	hover.corner_radius_top_left = 10
+	hover.corner_radius_top_right = 10
+	hover.corner_radius_bottom_left = 10
+	hover.corner_radius_bottom_right = 10
+	hover.border_width_left = 2
+	hover.border_width_top = 2
+	hover.border_width_right = 2
+	hover.border_width_bottom = 2
+	hover.border_color = ACCENT_ORANGE
+	fullscreen_button.add_theme_stylebox_override("hover", hover)
+
+	fullscreen_button.add_theme_font_size_override("font_size", 22)
+	fullscreen_button.add_theme_color_override("font_color", LIGHT_TEXT)
+
+	parent.add_child(fullscreen_button)
+	# Rechts naast de Menu-knop (die staat op x=15, breedte 90)
+	fullscreen_button.position = Vector2(15 + 90 + 10, 15)
+	fullscreen_button.pressed.connect(_on_fullscreen_pressed)
+
+
+func _on_fullscreen_pressed() -> void:
+	if DisplayServer.window_get_mode() == DisplayServer.WINDOW_MODE_FULLSCREEN:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	else:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+
+
+func _create_feedback_background(parent: Node) -> void:
+	feedback_bg = Panel.new()
+	feedback_bg.name = "FeedbackBG"
+	feedback_bg.visible = false  # Alleen zichtbaar als er feedback is
+	
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0.6)
+	style.corner_radius_top_left = 12
+	style.corner_radius_top_right = 12
+	style.corner_radius_bottom_left = 12
+	style.corner_radius_bottom_right = 12
+	style.shadow_color = Color(0, 0, 0, 0.3)
+	style.shadow_size = 6
+	style.shadow_offset = Vector2(0, 3)
+	feedback_bg.add_theme_stylebox_override("panel", style)
+	
+	parent.add_child(feedback_bg)
+	
+	# Positioneer achter de feedback_label (wordt bijgewerkt in _layout_ui)
+
+
+func _create_victory_overlay() -> void:
+	# Overlay voor "Goed gedaan!" scherm
+	victory_overlay = Panel.new()
+	victory_overlay.name = "VictoryOverlay"
+	victory_overlay.visible = false
+	victory_overlay.z_index = 100  # Boven alles
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0.75)
+	victory_overlay.add_theme_stylebox_override("panel", style)
+
+	victory_label = Label.new()
+	victory_label.name = "VictoryLabel"
+	victory_label.text = "Goed gedaan!\n\nJe hebt alle dieren gevonden!"
+	victory_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	victory_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	victory_label.add_theme_font_size_override("font_size", 48)
+	victory_label.add_theme_color_override("font_color", Color(0.3, 0.95, 0.4))
+
+	victory_overlay.add_child(victory_label)
+	add_child(victory_overlay)
+
+	# Direct al een fatsoenlijke full-screen size/positie geven,
+	# zodat het nooit linksboven blijft hangen ongeacht call-volgorde.
+	_position_victory_overlay()
+
+
+func _position_victory_overlay() -> void:
+	if not victory_overlay or not victory_label:
+		return
+	var viewport_size := get_viewport_rect().size
+	victory_overlay.size = viewport_size
+	victory_overlay.position = Vector2.ZERO
+	victory_label.size = Vector2(viewport_size.x, 200)
+	victory_label.position = Vector2(0, viewport_size.y / 2 - 100)
 
 
 func _style_value_label(lbl: Label) -> void:
@@ -224,7 +399,7 @@ func _layout_ui() -> void:
 	# TopBar
 	top_bar_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	top_bar_container.position = Vector2(20, 15)
-	top_bar_container.size = Vector2(viewport_size.x - 20, 75)
+	top_bar_container.size = Vector2(viewport_size.x - 40, 75)
 	top_bar_container.add_theme_constant_override("separation", 28)
 	
 	# TopBar achtergrond mee-schalen
@@ -251,6 +426,15 @@ func _layout_ui() -> void:
 		if child is Button:
 			child.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 			child.custom_minimum_size.y = bar_height - 16
+	
+	# Feedback achtergrond positioneren achter feedback_label
+	if feedback_bg and feedback_label:
+		var feedback_size := Vector2(feedback_label.size.x + 24, feedback_label.size.y + 16)
+		feedback_bg.size = feedback_size
+		feedback_bg.position = feedback_label.global_position - Vector2(12, 8)
+	
+	# Victory overlay full screen
+	_position_victory_overlay()
 
 
 func _setup_range() -> void:
@@ -276,14 +460,12 @@ func _compute_origin() -> void:
 	var grid_width := span * cell_size
 	var grid_height := span * cell_size
 	
-	# Grid hoger plaatsen: minder ruimte boven, meer ruimte onder voor labels
-	var effective_top := top_bar_container.position.y + top_bar_container.size.y + 10.0  # minder marge boven
-	var effective_bottom := bottom_bar.position.y - 40.0  # meer ruimte onder voor X-as labels
+	var effective_top := top_bar_container.position.y + top_bar_container.size.y + 10.0
+	var effective_bottom := bottom_bar.position.y - 40.0
 	var usable_height := effective_bottom - effective_top
 	var usable_width := viewport_size.x - side_margin * 2.0
 
 	var start_x := side_margin + (usable_width - grid_width) / 2.0
-	# Grid 30px hoger plaatsen
 	var start_y := effective_top + (usable_height + grid_height) / 2.0 - 30.0
 
 	origin = Vector2(start_x - min_val * cell_size, start_y + min_val * cell_size)
@@ -314,7 +496,8 @@ func _spawn_animals() -> void:
 			randi_range(min_val, max_val),
 			randi_range(min_val, max_val)
 		)
-		while used_positions.has(pos):
+		# === GEEN DIEREN OP DE RANDEN VAN HET GRID ===
+		while used_positions.has(pos) or pos.y == max_val or pos.y == min_val:
 			pos = Vector2i(
 				randi_range(min_val, max_val),
 				randi_range(min_val, max_val)
@@ -387,8 +570,39 @@ func _game_over() -> void:
 	x_string = ""
 	y_string = ""
 	_update_display()
-	_show_feedback("Gefeliciteerd! Je hebt alle dieren gevonden!", Color(0.2, 0.9, 0.2))
-	enter_button.disabled = true
+	
+	# Toon victory overlay in plaats van alleen feedback
+	_show_victory_screen()
+
+
+func _show_victory_screen() -> void:
+	if victory_overlay:
+		_position_victory_overlay()
+		victory_overlay.visible = true
+		victory_overlay.modulate = Color(1, 1, 1, 0)
+
+		audio_stream_player_2d.stream = VICTORY_SOUND
+		audio_stream_player_2d.play()
+		
+		# Fade in animatie
+		var tween := create_tween()
+		tween.tween_property(victory_overlay, "modulate", Color(1, 1, 1, 1), 0.5)
+		
+		# Na 5 seconden terug naar menu
+		await get_tree().create_timer(5.0).timeout
+		_return_to_menu()
+
+
+func _return_to_menu() -> void:
+	print("menu")
+	if START_SCREEN:
+		get_tree().change_scene_to_file("res://scenes/start_screen.tscn")
+	else:
+		push_error("Start screen kon niet worden geladen!")
+
+
+func _on_back_pressed() -> void:
+	_return_to_menu()
 
 
 func _on_digit_pressed(digit: int) -> void:
@@ -432,6 +646,8 @@ func _on_enter_pressed() -> void:
 
 	if Vector2i(val_x, val_y) == target_animal["grid_pos"]:
 		_show_feedback("Goed zo!", Color(0.2, 0.9, 0.2))
+		audio_stream_player_2d.stream = CORRECT_SOUND
+		audio_stream_player_2d.play()
 		enter_button.disabled = true
 		await get_tree().create_timer(1.0).timeout
 		enter_button.disabled = false
@@ -449,6 +665,17 @@ func _on_enter_pressed() -> void:
 func _show_feedback(text: String, color: Color) -> void:
 	feedback_label.text = text
 	feedback_label.modulate = color
+	
+	# Toon achtergrond paneel
+	if feedback_bg:
+		feedback_bg.visible = true
+		feedback_bg.modulate = Color(1, 1, 1, 1)
+	
+	# Verberg na 2 seconden
+	await get_tree().create_timer(2.0).timeout
+	if feedback_bg:
+		feedback_bg.visible = false
+	feedback_label.text = ""
 
 
 func _update_display() -> void:

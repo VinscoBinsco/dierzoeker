@@ -13,6 +13,9 @@ config_version=5
 config/name="Dierzoeker"
 run/main_scene="uid://dn2ebvj0ahjs2"
 config/features=PackedStringArray("4.6", "GL Compatibility")
+boot_splash/bg_color=Color(1, 1, 1, 1)
+boot_splash/stretch_mode=2
+boot_splash/image="uid://d0lib5bc6p8af"
 config/icon="res://icon.svg"
 
 [autoload]

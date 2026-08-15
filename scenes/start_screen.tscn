@@ -98,7 +98,7 @@ text = "Dieren zoeken"
 [node name="SubtitleLabel" type="Label" parent="CenterContainer/VBoxContainer" unique_id=516591176]
 layout_mode = 2
 theme_override_constants/outline_size = 8
-text = "Leer coördinaten met de dieren!"
+text = "Leer coördinaten met dieren!"
 
 [node name="Spacer" type="Control" parent="CenterContainer/VBoxContainer" unique_id=875892496]
 custom_minimum_size = Vector2(0, 80)
@@ -113,3 +113,13 @@ layout_mode = 2
 
 [node name="HardButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=489349669]
 layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="." unique_id=125839614]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 4.0
+offset_right = 332.0
+offset_bottom = 49.0
+theme_override_constants/outline_size = 7
+bbcode_enabled = true
+text = "Kijk op [url=https://www.schoolheld.nl]SchoolHeld.nl[/url] voor meer games!"
