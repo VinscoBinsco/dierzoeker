@@ -108,6 +108,30 @@ body {
     window.location.href = "https://schoolheld.nl";
   }
 </script>
+
+<style>
+  #godot-splash {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #000000 url('Dierzoeker.png') no-repeat center center;
+    background-size: contain;
+    z-index: 9999;
+    transition: opacity 0.5s ease;
+  }
+</style>
+<div id="godot-splash"></div>
+<script>
+  window.addEventListener('godot-fully-loaded', () => {
+    const splash = document.getElementById('godot-splash');
+    if (splash) {
+      splash.style.opacity = '0';
+      setTimeout(() => splash.remove(), 500);
+    }
+  });
+</script>
 	</head>
 	<body>
 		<canvas id="canvas">
@@ -126,7 +150,7 @@ body {
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":1689836,"index.wasm":35739700},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":true,"executable":"index","experimentalVK":false,"fileSizes":{"index.pck":1689860,"index.wasm":35739700},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
 
